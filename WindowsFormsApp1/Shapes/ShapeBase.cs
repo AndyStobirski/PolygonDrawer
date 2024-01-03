@@ -26,5 +26,9 @@ namespace WindowsFormsApp1
 
         public abstract bool Drag(int pX, int pY);
 
+        protected abstract Rectangle[] Handles();
+
+        public abstract Rectangle GetBoundingRectangle();
+
     }
 }

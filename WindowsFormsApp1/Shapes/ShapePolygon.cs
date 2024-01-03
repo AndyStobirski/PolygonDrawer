@@ -67,7 +67,7 @@ namespace WindowsFormsApp1
 
             if (Selected)
             {
-                g.DrawRectangle(_BoundaryPen, BoundingRectangle);
+                g.DrawRectangle(_BoundaryPen, GetBoundingRectangle());
             }
 
         }

@@ -49,6 +49,7 @@ namespace WindowsFormsApp1
 
                 shape.Draw(e.Graphics);
             }
+
         }
 
         private void Form1_MouseMove(object sender, MouseEventArgs e)
@@ -92,7 +93,7 @@ namespace WindowsFormsApp1
             }
             else if (SelectedShape != null)
             {
-                var bounds = SelectedShape.BoundingRectangle;
+                var bounds = SelectedShape.GetBoundingRectangle();
                 Point delta = new Point(e.X - MouseDownLocation.X, e.Y - MouseDownLocation.Y);
 
                 if (SelectedShape.ItemHit == SelectionPartHit.body)

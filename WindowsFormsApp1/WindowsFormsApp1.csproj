@@ -55,6 +55,7 @@
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
     <Compile Include="Shapes\Line.cs" />
+    <Compile Include="Shapes\ShapeCircle.cs" />
     <Compile Include="Shapes\ShapePolygonBase.cs" />
     <Compile Include="Shapes\ShapePolygon.cs" />
     <Compile Include="Program.cs" />

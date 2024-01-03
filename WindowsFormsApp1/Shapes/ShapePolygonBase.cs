@@ -47,7 +47,7 @@ namespace WindowsFormsApp1
         /// Define handles, dependant on IsRectangle
         /// </summary>
         /// <returns></returns>
-        protected Rectangle[] Handles()
+        protected override Rectangle[] Handles()
         {
             if (IsPolygon)  // poly draws handles on points
             {
@@ -66,7 +66,7 @@ namespace WindowsFormsApp1
             }
         }
 
-        protected Rectangle DeleteButton => new Rectangle((BoundingRectangle.X + BoundingRectangle.Width - _handleSize / 2) - (1 * _handleSize), (BoundingRectangle.Y - _handleSize / 2) + (1 * _handleSize), _handleSize, _handleSize);
+        protected Rectangle DeleteButton => new Rectangle((GetBoundingRectangle().X + GetBoundingRectangle().Width - _handleSize / 2) - (1 * _handleSize), (GetBoundingRectangle().Y - _handleSize / 2) + (1 * _handleSize), _handleSize, _handleSize);
 
 
         /// <summary>
@@ -109,22 +109,19 @@ namespace WindowsFormsApp1
         /// Rectangle which bounds the polygon
         /// </summary>
         /// <returns></returns>
-        public Rectangle BoundingRectangle
+        public override Rectangle GetBoundingRectangle()
         {
-            get
-            {
-                Rectangle r = new Rectangle();
+            Rectangle r = new Rectangle();
 
-                r.X = (int)Points.Select(p => p.X).Min();
-                r.Y = (int)Points.Select(p => p.Y).Min();
+            r.X = (int)Points.Select(p => p.X).Min();
+            r.Y = (int)Points.Select(p => p.Y).Min();
 
-                int x1 = (int)Points.Select(p => p.X).Max();
-                int y1 = (int)Points.Select(p => p.Y).Max();
+            int x1 = (int)Points.Select(p => p.X).Max();
+            int y1 = (int)Points.Select(p => p.Y).Max();
 
-                r.Size = new Size(x1 - r.X, y1 - r.Y);
+            r.Size = new Size(x1 - r.X, y1 - r.Y);
 
-                return r;
-            }
+            return r;
         }
 
         /// <summary>
