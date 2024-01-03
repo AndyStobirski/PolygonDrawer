@@ -47,7 +47,7 @@ namespace WindowsFormsApp1
         /// Define handles, dependant on IsRectangle
         /// </summary>
         /// <returns></returns>
-        private Rectangle[] Handles()
+        protected Rectangle[] Handles()
         {
             if (IsPolygon)  // poly draws handles on points
             {
@@ -66,7 +66,7 @@ namespace WindowsFormsApp1
             }
         }
 
-        private Rectangle DeleteButton => new Rectangle((BoundingRectangle.X + BoundingRectangle.Width - _handleSize / 2) - (1 * _handleSize), (BoundingRectangle.Y - _handleSize / 2) + (1 * _handleSize), _handleSize, _handleSize);
+        protected Rectangle DeleteButton => new Rectangle((BoundingRectangle.X + BoundingRectangle.Width - _handleSize / 2) - (1 * _handleSize), (BoundingRectangle.Y - _handleSize / 2) + (1 * _handleSize), _handleSize, _handleSize);
 
 
         /// <summary>
@@ -91,7 +91,7 @@ namespace WindowsFormsApp1
         /// </summary>
         protected List<PointF> Points { get;  set; }
 
-        private List<Line> CalculateLines()
+        protected List<Line> CalculateLines()
         {
             List<Line>  Lines = new List<Line>();
 
@@ -131,7 +131,7 @@ namespace WindowsFormsApp1
         /// Build a shape path which represents poly for hit testing
         /// </summary>
         /// <returns></returns>
-        private GraphicsPath ShapePath()
+        protected GraphicsPath ShapePath()
         {
             GraphicsPath path = new GraphicsPath();
 
@@ -147,7 +147,7 @@ namespace WindowsFormsApp1
         /// <summary>
         /// If false, it's a rectangle, else it's a polygo
         /// </summary>
-        public bool IsPolygon { get; protected set; }
+        protected bool IsPolygon { get;  set; }
 
         public override void Draw(Graphics g)
         {
@@ -173,7 +173,7 @@ namespace WindowsFormsApp1
         /// <param name="pX"></param>
         /// <param name="pY"></param>
         /// <returns></returns>
-        private bool TestHandleHit(int pX, int pY)
+        protected bool TestHandleHit(int pX, int pY)
         {
             for(int ctr =0; ctr < Handles().Count(); ctr++)
             {
@@ -192,7 +192,7 @@ namespace WindowsFormsApp1
         /// <param name="pX"></param>
         /// <param name="pY"></param>
         /// <returns></returns>
-        private bool TestLineHit(int pX, int pY)
+        protected bool TestLineHit(int pX, int pY)
         {
             var lines = CalculateLines();
             GraphicsPath path;
@@ -320,22 +320,6 @@ namespace WindowsFormsApp1
             return true;
         }
 
-        /// <summary>
-        /// A handle has been added on the line who's index is specified by LineHit
-        /// </summary>
-        /// <param name="pX"></param>
-        /// <param name=""></param>
-        public void AddHandle(int pX, int pY)
-        {
-            var lines = CalculateLines();
 
-            // the index of LineHit corresponds the Points index of the point which begins it
-            // and we
-            PointF newPoint = new PointF(pX, pY);
-
-            Points.Insert(LineHit + 1, newPoint);
-
-    
-        }
     }
 }

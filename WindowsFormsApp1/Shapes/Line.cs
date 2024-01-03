@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace WindowsFormsApp1
 {
-    class Line
+    public class Line
     {
         public float X1 { get; set; }
         public float Y1 { get; set; }

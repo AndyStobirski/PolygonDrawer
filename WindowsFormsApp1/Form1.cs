@@ -157,7 +157,7 @@ namespace WindowsFormsApp1
             {
                 if (SelectedShape.ItemHit == SelectionPartHit.line)
                 {
-                    SelectedShape.AddHandle(e.X, e.Y);
+                    (SelectedShape as ShapePolygon).AddHandle(e.X, e.Y);
                     this.Invalidate();
                 }else if (SelectedShape.ItemHit == SelectionPartHit.dragHandle)
                 {
