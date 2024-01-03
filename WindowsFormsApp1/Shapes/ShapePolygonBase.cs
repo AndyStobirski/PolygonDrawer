@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Drawing.Printing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,28 +11,33 @@ using System.Threading.Tasks;
 namespace WindowsFormsApp1
 {
 
-    public enum ShapeItemHit  {Body, Handle, Line, None };
+    public enum SelectionPartHit  {body, dragHandle, line, none, deleteButton };
 
-    public class Poly : BaseShape
+    public class ShapePolygonBase : ShapeBase
     {
-        public Poly (bool pIsRectangle, int pX, int pY    )
+        public ShapePolygonBase()
         {
-            IsRectangle = pIsRectangle;
+
+        }
+
+        public ShapePolygonBase (bool pIsRectangle, int pX, int pY    )
+        {
+            IsPolygon = pIsRectangle;
 
             //specify TL, TR, BR, TL
             Points = new List<PointF> { new Point(pX, pY), new Point(pX + 32, pY), new Point(pX + 32, pY+32), new Point(pX, pY + 32) };
 
         }
 
-        public Color LineColour { get; set; } = Color.Black;
+        public Color LineColour { get; set; } = Color.Blue;
         public Color HandleColour { get; set; } = Color.Black;
         public Color HandleFill { get; set; } = Color.White;
-        public Color BodyFill { get; set; } = Color.Blue;
+        public Color BodyFill { get; set; } = Color.FromArgb(128, Color.White);
         private Pen _Handlepen => new Pen(HandleColour, 2);
         private Pen _LinePen => new Pen(LineColour, 2);
         private SolidBrush _HandleBrush => new SolidBrush(HandleFill);
 
-
+        
 
         private SolidBrush _BodyBrush => new SolidBrush(BodyFill);
 
@@ -43,7 +49,7 @@ namespace WindowsFormsApp1
         /// <returns></returns>
         private Rectangle[] Handles()
         {
-            if (IsRectangle)  // poly draws handles on points
+            if (IsPolygon)  // poly draws handles on points
             {
                 return Points.Select(p => new Rectangle((int)p.X - _handleSize / 2, (int)p.Y - _handleSize / 2, _handleSize, _handleSize)).ToArray();
             }
@@ -57,33 +63,33 @@ namespace WindowsFormsApp1
                     , new Rectangle((int)(Points[0].X + (Points[1].X - Points[0].X)/2) - _handleSize / 2 ,(int)(Points[0].Y + (Points[2].Y - Points[0].Y)) - _handleSize / 2 ,_handleSize,_handleSize   ) //bottom middle
                     , new Rectangle((int)(Points[0].X ) - _handleSize / 2 ,(int)(Points[0].Y + (Points[2].Y - Points[0].Y)/2) - _handleSize / 2 ,_handleSize,_handleSize   ) //Left middle
                 };
-            }    
+            }
         }
 
-        
+        private Rectangle DeleteButton => new Rectangle((BoundingRectangle.X + BoundingRectangle.Width - _handleSize / 2) - (1 * _handleSize), (BoundingRectangle.Y - _handleSize / 2) + (1 * _handleSize), _handleSize, _handleSize);
 
 
         /// <summary>
         /// Portion of the poly hit
         /// </summary>
-        public ShapeItemHit ItemHit { get; private set; }
+        public SelectionPartHit ItemHit { get; protected set; }
 
         /// <summary>
         /// Index of the handle hit
         /// </summary>
-        public int HandleHit { get; private set; }
+        public int HandleHit { get; protected set; }
 
         /// <summary>
         /// The index of the bounding line hit
         /// </summary>
-        public int LineHit { get; private set; }
+        public int LineHit { get; protected set; }
 
 
 
         /// <summary>
         /// Points that comprise the poly
         /// </summary>
-        public List<PointF> Points;
+        protected List<PointF> Points { get;  set; }
 
         private List<Line> CalculateLines()
         {
@@ -141,18 +147,24 @@ namespace WindowsFormsApp1
         /// <summary>
         /// If false, it's a rectangle, else it's a polygo
         /// </summary>
-        public bool IsRectangle { get; private set; }
+        public bool IsPolygon { get; protected set; }
 
         public override void Draw(Graphics g)
         {
             g.FillPolygon(_BodyBrush, Points.ToArray());
             g.DrawPolygon(_LinePen, Points.ToArray());
 
+            if (!Selected)
+                return;
+
             foreach (Rectangle r in Handles())
             {
                 g.FillRectangle(_HandleBrush, r);
                 g.DrawRectangle(_Handlepen, r);
             }
+
+            g.DrawLine(_LinePen, new Point(DeleteButton.Left, DeleteButton.Top), new Point(DeleteButton.Right, DeleteButton.Bottom));
+            g.DrawLine(_LinePen, new Point(DeleteButton.Left, DeleteButton.Bottom), new Point(DeleteButton.Right, DeleteButton.Top));
         }
 
         /// <summary>
@@ -210,23 +222,28 @@ namespace WindowsFormsApp1
         /// <returns></returns>
         public override bool HitTest(int pX, int pY)
         {
+        
             bool hit = true;
             var path = ShapePath();
-            if (TestHandleHit(pX,pY))
+            if (DeleteButton.Contains(pX, pY))
             {
-                ItemHit = ShapeItemHit.Handle;
+                ItemHit = SelectionPartHit.deleteButton;
             }
-            else if (path.IsVisible(pX,pY))
+            else if (TestHandleHit(pX, pY))
             {
-                ItemHit = ShapeItemHit.Body;
+                ItemHit = SelectionPartHit.dragHandle;
+            }
+            else if (path.IsVisible(pX, pY))
+            {
+                ItemHit = SelectionPartHit.body;
             }
             else if (TestLineHit(pX, pY))
             {
-                ItemHit = ShapeItemHit.Line;
+                ItemHit = SelectionPartHit.line;
             }
             else
             {
-                ItemHit = ShapeItemHit.None;
+                ItemHit = SelectionPartHit.none;
                 hit = false;
             }
 
@@ -240,7 +257,7 @@ namespace WindowsFormsApp1
         /// <param name="pY"></param>
         public void MoveHandle(int pX, int pY)
         {
-            if (IsRectangle)  //  it's a polygon, so move the individual point
+            if (IsPolygon)  //  it's a polygon, so move the individual point
             {
                 var p = Points[HandleHit];
                 Points[HandleHit] = new PointF(p.X + pX, p.Y + pY);

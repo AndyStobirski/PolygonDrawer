@@ -7,14 +7,16 @@ using System.Threading.Tasks;
 
 namespace WindowsFormsApp1
 {
-    public abstract class BaseShape
+    public abstract class ShapeBase
     {
         public string ID { get; private set; }
 
-        public BaseShape()
+        public ShapeBase()
         {
             ID = Guid.NewGuid().ToString();
         }
+
+        public bool Selected { get; set; }
 
         public Point Origin { get; set; }
 

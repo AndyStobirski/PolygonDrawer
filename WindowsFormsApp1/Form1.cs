@@ -23,21 +23,31 @@ namespace WindowsFormsApp1
         }
 
 
-        List<Poly> Polys = new List<Poly>();
+        List<ShapePolygonBase> _Shapes = new List<ShapePolygonBase>();
 
-        Poly SelectedPoly;
+        
         Point MouseDownLocation;
         bool IsMouseDown;
 
+        ShapePolygonBase _SelectedShape;
+        public ShapePolygonBase SelectedShape { get { return _SelectedShape; } set { 
+                
+                foreach(var p in _Shapes)
+                {
+                    p.Selected = p == value;
+                }
+
+                _SelectedShape = value; 
+            } }
 
         private void Form1_Paint(object sender, PaintEventArgs e)
         {
             e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
 
-            foreach (var poly in Polys)
+            foreach (var shape in _Shapes)
             {
 
-                poly.Draw(e.Graphics);
+                shape.Draw(e.Graphics);
             }
         }
 
@@ -45,27 +55,34 @@ namespace WindowsFormsApp1
         {
             if (!IsMouseDown)
             {
-                foreach (var poly in Polys)
+                foreach (var shape in _Shapes)
                 {
-                    if (poly.HitTest(e.X, e.Y))
+                    if (shape.HitTest(e.X, e.Y))
                     {
-                        switch (poly.ItemHit)
+                        if (shape == SelectedShape)
                         {
-                            case ShapeItemHit.Body:
-                                Cursor = Cursors.SizeAll;
-                                break;
+                            switch (shape.ItemHit)
+                            {
+                                case SelectionPartHit.body:
+                                    Cursor = Cursors.SizeAll;
+                                    break;
 
-                            case ShapeItemHit.Line:
-                                Cursor = Cursors.Hand;
-                                break;
+                                case SelectionPartHit.line:
+                                    Cursor = Cursors.Hand;
+                                    break;
 
 
-                            case ShapeItemHit.Handle:
-                                Cursor = Cursors.Cross;
-                                break;
+                                case SelectionPartHit.dragHandle:
+                                    Cursor = Cursors.Cross;
+                                    break;
+
+                                case SelectionPartHit.deleteButton:
+                                    Cursor = Cursors.Hand;
+                                    break;
+                            }                           
                         }
 
-                        return;
+                         return;
                     }
                     else
                     {
@@ -73,18 +90,18 @@ namespace WindowsFormsApp1
                     }
                 }
             }
-            else if (SelectedPoly != null)
+            else if (SelectedShape != null)
             {
-                var bounds = SelectedPoly.BoundingRectangle;
+                var bounds = SelectedShape.BoundingRectangle;
                 Point delta = new Point(e.X - MouseDownLocation.X, e.Y - MouseDownLocation.Y);
 
-                if (SelectedPoly.ItemHit == ShapeItemHit.Body)
+                if (SelectedShape.ItemHit == SelectionPartHit.body)
                 {
-                    SelectedPoly.Drag(delta.X, delta.Y);                    
+                    SelectedShape.Drag(delta.X, delta.Y);                    
                 }
-                else if (SelectedPoly.ItemHit == ShapeItemHit.Handle)
+                else if (SelectedShape.ItemHit == SelectionPartHit.dragHandle)
                 {       
-                     SelectedPoly.MoveHandle(delta.X, delta.Y);                    
+                     SelectedShape.MoveHandle(delta.X, delta.Y);                    
                 }
 
                 MouseDownLocation = new Point(e.X, e.Y);
@@ -96,7 +113,7 @@ namespace WindowsFormsApp1
         private void Form1_MouseUp(object sender, MouseEventArgs e)
         {
             IsMouseDown = false;
-            if (SelectedPoly != null)
+            if (SelectedShape != null)
             {
                 propertyGrid1.Refresh();
             }
@@ -107,17 +124,20 @@ namespace WindowsFormsApp1
             IsMouseDown = true;
             MouseDownLocation = new Point(e.X, e.Y);
 
-            SelectedPoly = null;
+            SelectedShape = null;
             propertyGrid1.SelectedObject = null;
-            foreach (var poly in Polys)
+            foreach (var shape in _Shapes)
             {
 
-                if (poly.HitTest(e.X, e.Y))
+                if (shape.HitTest(e.X, e.Y))
                 {
-                    propertyGrid1.SelectedObject = SelectedPoly = poly;
+                    propertyGrid1.SelectedObject = SelectedShape = shape;
                     return;
                 }
             }
+
+            SelectedShape = null;
+            this.Invalidate();
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -125,25 +145,37 @@ namespace WindowsFormsApp1
 
         }
 
+
+        /// <summary>
+        /// Doubleclick event, do things to the selected poly lines
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Form1_MouseDoubleClick(object sender, MouseEventArgs e)
         {
-            if (SelectedPoly != null && SelectedPoly.ItemHit == ShapeItemHit.Line)
+            if (SelectedShape != null && SelectedShape is ShapePolygon)                  
             {
-
-                SelectedPoly.AddHandle(e.X, e.Y);
+                if (SelectedShape.ItemHit == SelectionPartHit.line)
+                {
+                    SelectedShape.AddHandle(e.X, e.Y);
+                    this.Invalidate();
+                }else if (SelectedShape.ItemHit == SelectionPartHit.dragHandle)
+                {
+                    (SelectedShape as ShapePolygon).DeleteHandle();
+                }
                 this.Invalidate();
             }
         }
 
         private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            Polys.Add(new Poly(false, 300, 300));
+            _Shapes.Add(new ShapeRectangle( 300, 300));
             this.Invalidate();
         }
 
         private void linkLabel2_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            Polys.Add(new Poly(true, 300, 300));
+            _Shapes.Add(new ShapePolygon(300, 300));
             this.Invalidate();
         }
     }
