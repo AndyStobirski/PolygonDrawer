@@ -30,5 +30,7 @@ namespace WindowsFormsApp1
 
         public abstract Rectangle GetBoundingRectangle();
 
+        public abstract void MoveHandle(int pX, int pY);
+
     }
 }

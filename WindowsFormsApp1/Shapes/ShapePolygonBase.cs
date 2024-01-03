@@ -252,7 +252,7 @@ namespace WindowsFormsApp1
         /// </summary>
         /// <param name="pX"></param>
         /// <param name="pY"></param>
-        public void MoveHandle(int pX, int pY)
+        public override void MoveHandle(int pX, int pY)
         {
             if (IsPolygon)  //  it's a polygon, so move the individual point
             {

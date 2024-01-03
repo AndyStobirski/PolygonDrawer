@@ -34,6 +34,11 @@ namespace WindowsFormsApp1.Shapes
             throw new NotImplementedException();
         }
 
+        public override void MoveHandle(int pX, int pY)
+        {
+            throw new NotImplementedException();
+        }
+
         protected override Rectangle[] Handles()
         {
             throw new NotImplementedException();
